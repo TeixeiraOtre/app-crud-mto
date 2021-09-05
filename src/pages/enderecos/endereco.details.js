@@ -55,7 +55,6 @@ export default function ClienteEditar() {
   useEffect(() => {
     async function getEndereco(){
       var response = await api.get('/api/enderecos.details/'+idEndereco);
-      console.log(response.data);
 
       setCEP(response.data.endereco.cep);
       setLogradouro(response.data.endereco.logradouro);

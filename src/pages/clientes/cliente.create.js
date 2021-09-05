@@ -45,20 +45,13 @@ export default function ClienteCadastro() {
   const [email, setEmail] = useState('');
   const [telefone, setTelefone] = useState('');
   const [error, setError] = useState(false);
-  const [helperText, setHelperText] = useState(false);
 
-  let validateEmail = ( email ) => {
-    console.log(email);
+  const validateEmail = ( email ) => {
     let re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-    console.log(re.test(email));
     if ( !re.test(email) ) {
       setError(true);
-      setHelperText('Email inválido.');
-      console.log('deu errado')
     }else{
       setError(false);
-      setHelperText(null);
-      console.log('deu certo')
     }
   }
 
@@ -66,26 +59,36 @@ export default function ClienteCadastro() {
     setTelefone( value
       .replace(/\D/g, "")
       .replace(/(\d{2})(\d)/, "($1) $2")
-      .replace(/(\d{5})(\d{4})(\d)/, "$1-$2"))
+      .replace(/(\d{5})(\d{4})(\d)/, "$1$2"))
   };
 
   async function handleSubmit(){
+    
     const data = {
       nome_cliente:nome, 
       email_cliente:email, 
       telefone_cliente:telefone
     }
 
-    const maskOnlyNumbers = value => {
-      setTelefone(value.replace(/\D/g, ""));
-    };
-
-    const response = await api.post('/api/clientes', data);
-
-    if(response.status === 201){
-      window.location.href='/clientes'
+    if ( (nome === '') || (nome.length < 3) ) {
+      alert('Existem campos com conteúdo INVÁLIDO. Corrija-os e tente novamente!');
     }else{
-      alert('Erro ao cadastrar cliente!');
+      if ( (email === '') || (email.length < 3) || error) {
+        alert('Existem campos com conteúdo INVÁLIDO. Corrija-os e tente novamente!');
+      }else{
+        if ( (telefone === '') || (telefone.length < 3) || error) {
+          alert('Existem campos com conteúdo INVÁLIDO. Corrija-os e tente novamente!');
+        }else{
+          const response = await api.post('/api/clientes', data);
+      
+          if(response.status === 201){
+            alert('SUCESSO! Cliente cadastrado.');
+            window.location.href='/clientes'
+          }else{
+            alert('ERRO! Tente novamente em alguns minutos.');
+          }
+        }
+      }
     }
   }
 
@@ -114,6 +117,7 @@ export default function ClienteCadastro() {
                                 autoComplete="nome"
                                 value={nome}
                                 onChange={e => setNome(e.target.value)}
+                                error={(nome === '') || (nome.length < 3)}
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -127,8 +131,7 @@ export default function ClienteCadastro() {
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
                                 onBlur={ e => validateEmail(e.target.value)}
-                                error={error}
-                                helperText={helperText}
+                                error={error || (email === '')}
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -141,6 +144,7 @@ export default function ClienteCadastro() {
                                 autoComplete="telefone"
                                 value={telefone}
                                 onChange={e => maskPhone(e.target.value)}
+                                error={(telefone === '') || (telefone.length < 10)}
                             />
                         </Grid>
                         <Grid item xs={12} sm={12} container justifyContent="flex-end">

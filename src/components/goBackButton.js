@@ -7,6 +7,6 @@ export default function GoBackButton(){
   const history = useHistory();
 
   return (
-    <Button variant="contained" onClick={() => history.goBack()}><KeyboardReturnIcon /></Button>
+    <Button variant="contained" onClick={() => history.go(-1)}><KeyboardReturnIcon /></Button>
   )
 }

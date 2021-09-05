@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router';
 import Paper from '@material-ui/core/Paper';
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
@@ -8,6 +7,7 @@ import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import GoBackButton from '../../components/goBackButton';
+import { useHistory } from 'react-router';
 
 import MenuHome from '../../components/menu-home';
 import Footer from '../../components/footer';
@@ -75,13 +75,42 @@ export default function EnderecoCadastro() {
       cliente_id:cliente
     }
 
-    const response = await api.post('/api/enderecos', data);
-
-    if(response.status === 201){
-      alert('Cadastro efetuado com SUCESSO!');
-      history.goBack();
+    if ( (cep === '') || (cep.length < 9) ) {
+      alert('ERRO! Existem campos inválidos.');
     }else{
-      alert('Erro ao cadastrar cliente!');
+      if ( (logradouro === '') || (logradouro.length < 6) ) {
+        alert('ERRO! Existem campos inválidos.');
+      }else{
+        if ( numero === '' ) {
+          alert('ERRO! Existem campos inválidos.');
+        }else{
+          if( logradouro === '' ) {
+            alert('ERRO! Existem campos inválidos.');
+          }else{
+            if ( bairro === '' ) {
+              alert('ERRO! Existem campos inválidos.');
+            }else{
+              if ( localidade === '' ) {
+                alert('ERRO! Existem campos inválidos.');
+              }else{
+                if ( uf === '' ) {
+                  alert('ERRO! Existem campos inválidos.');
+                }else{
+                  const response = await api.post('/api/enderecos', data);
+      
+                  if(response.status === 201){
+                    alert('SUCESSO! Endereço cadastrado.');
+                    localStorage.removeItem('cliente');
+                    history.go(-1);
+                  }else{
+                    alert('ERRO! Tente novamente em alguns minutos.');
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -108,7 +137,6 @@ export default function EnderecoCadastro() {
                                 fullWidth
                                 autoComplete="CEP"
                                 value={cep}
-                                required={true}
                                 onChange={e => {
                                   maskCEP(e.target.value);
                                 }}
@@ -118,8 +146,9 @@ export default function EnderecoCadastro() {
                                     setLocalidade(res.city);
                                     setBairro(res.neighborhood);
                                     setLogradouro(res.street);
-                                  }).catch(alert('CEP não encontrado!'));
+                                  });
                                 }}
+                                error={(cep === '') || (cep.length < 9)}
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -130,8 +159,8 @@ export default function EnderecoCadastro() {
                                 fullWidth
                                 autoComplete="logradouro"
                                 value={logradouro}
-                                required={true}
                                 onChange={e => setLogradouro(e.target.value)}
+                                error={(logradouro === '') || (logradouro.length < 6)}
                             />
                         </Grid>
                         <Grid item xs={3} sm={3}>
@@ -144,6 +173,7 @@ export default function EnderecoCadastro() {
                                 value={numero}
                                 required={true}
                                 onChange={e => setNumero(e.target.value)}
+                                error={numero === ''}
                             />
                         </Grid>
                         <Grid item xs={6} sm={6}>
@@ -165,8 +195,8 @@ export default function EnderecoCadastro() {
                                 fullWidth
                                 autoComplete="bairro"
                                 value={bairro}
-                                required={true}
                                 onChange={e => setBairro(e.target.value)}
+                                error={bairro === ''}
                             />
                         </Grid>
                         <Grid item xs={9} sm={9}>
@@ -177,8 +207,8 @@ export default function EnderecoCadastro() {
                                 fullWidth
                                 autoComplete="localidade"
                                 value={localidade}
-                                required={true}
                                 onChange={e => setLocalidade(e.target.value)}
+                                error={localidade === ''}
                             />
                         </Grid>
                         <Grid item xs={3} sm={3}>
@@ -189,8 +219,8 @@ export default function EnderecoCadastro() {
                                 fullWidth
                                 autoComplete="uf"
                                 value={uf}
-                                required={true}
                                 onChange={e => setUF(e.target.value)}
+                                error={uf === ''}
                             />
                         </Grid>
                         <Grid item xs={12} sm={12} container justifyContent="flex-end">

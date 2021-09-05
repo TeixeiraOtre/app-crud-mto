@@ -58,7 +58,6 @@ export default function ClientesListagem() {
 
     async function loadClientes(){
       const response = await api.get('/api/clientes');
-      // console.log(response.data.clientes);
       setClientes(response.data.clientes);
     }
     loadClientes();

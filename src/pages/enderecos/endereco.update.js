@@ -7,12 +7,14 @@ import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import GoBackButton from '../../components/goBackButton';
+import { useHistory } from 'react-router';
+import { useParams } from 'react-router-dom';
 
 import MenuHome from '../../components/menu-home';
 import Footer from '../../components/footer';
 
 import api from '../../services/api';
-import { useParams } from 'react-router-dom';
+import cepPromise from 'cep-promise';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -52,10 +54,11 @@ export default function EnderecoEditar() {
 
   const { idEndereco } = useParams();
 
+  const history = useHistory();
+
   useEffect(() => {
     async function getEndereco(){
       var response = await api.get('/api/enderecos.details/'+idEndereco);
-      console.log(response.data);
 
       setCEP(response.data.endereco.cep);
       setLogradouro(response.data.endereco.logradouro);
@@ -69,6 +72,10 @@ export default function EnderecoEditar() {
     getEndereco();
   }, [])
 
+  const maskCEP = value => {
+    setCEP(value.replace(/\D/g, "").replace(/^(\d{5})(\d{3})+?$/, "$1-$2"));
+  };
+
   async function handleSubmit(){
     const data = {
       _id:idEndereco,
@@ -81,15 +88,42 @@ export default function EnderecoEditar() {
       uf:uf
     }
 
-    // FAZER A VALIDAÇÃO NECESSÁRIA PARA ENVIO!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    const response = await api.put('/api/enderecos', data);
-
-    if(response.status === 200){
-      alert('Endereço atualizado com SUCESSO!');
-      window.location.reload();
+    if ( (cep === '') || (cep.length < 9) ) {
+      alert('ERRO! Existem campos inválidos.');
     }else{
-      alert('Erro ao atualizar cliente!');
+      if ( (logradouro === '') || (logradouro.length < 6) ) {
+        alert('ERRO! Existem campos inválidos.');
+      }else{
+        if ( numero === '' ) {
+          alert('ERRO! Existem campos inválidos.');
+        }else{
+          if( logradouro === '' ) {
+            alert('ERRO! Existem campos inválidos.');
+          }else{
+            if ( bairro === '' ) {
+              alert('ERRO! Existem campos inválidos.');
+            }else{
+              if ( localidade === '' ) {
+                alert('ERRO! Existem campos inválidos.');
+              }else{
+                if ( uf === '' ) {
+                  alert('ERRO! Existem campos inválidos.');
+                }else{
+
+                  const response = await api.put('/api/enderecos', data);
+              
+                  if(response.status === 200){
+                    alert('SUCESSO! Endereço atualizado.');
+                    history.go(-1);
+                  }else{
+                    alert('Erro ao atualizar cliente!');
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -116,6 +150,18 @@ export default function EnderecoEditar() {
                                 fullWidth
                                 autoComplete="CEP"
                                 value={cep}
+                                onChange={e => {
+                                  maskCEP(e.target.value);
+                                }}
+                                onBlur={e => {
+                                  cepPromise(e.target.value).then(res => {
+                                    setUF(res.state);
+                                    setLocalidade(res.city);
+                                    setBairro(res.neighborhood);
+                                    setLogradouro(res.street);
+                                  });
+                                }}
+                                error={(cep === '') || (cep.length < 9)}
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -126,6 +172,8 @@ export default function EnderecoEditar() {
                                 fullWidth
                                 autoComplete="logradouro"
                                 value={logradouro}
+                                onChange={e => setLogradouro(e.target.value)}
+                                error={(logradouro === '') || (logradouro.length < 6)}
                             />
                         </Grid>
                         <Grid item xs={3} sm={3}>
@@ -136,6 +184,8 @@ export default function EnderecoEditar() {
                                 fullWidth
                                 autoComplete="numero_endereco"
                                 value={numero}
+                                onChange={e => setNumero(e.target.value)}
+                                error={numero === ''}
                             />
                         </Grid>
                         <Grid item xs={6} sm={6}>
@@ -146,6 +196,7 @@ export default function EnderecoEditar() {
                                 fullWidth
                                 autoComplete="complemento"
                                 value={complemento}
+                                onChange={e => setComplemento(e.target.value)}
                             />
                         </Grid>
                         <Grid item xs={6} sm={6}>
@@ -156,6 +207,8 @@ export default function EnderecoEditar() {
                                 fullWidth
                                 autoComplete="bairro"
                                 value={bairro}
+                                onChange={e => setBairro(e.target.value)}
+                                error={bairro === ''}
                             />
                         </Grid>
                         <Grid item xs={9} sm={9}>
@@ -166,6 +219,8 @@ export default function EnderecoEditar() {
                                 fullWidth
                                 autoComplete="localidade"
                                 value={localidade}
+                                onChange={e => setLocalidade(e.target.value)}
+                                error={localidade === ''}
                             />
                         </Grid>
                         <Grid item xs={3} sm={3}>
@@ -176,6 +231,8 @@ export default function EnderecoEditar() {
                                 fullWidth
                                 autoComplete="uf"
                                 value={uf}
+                                onChange={e => setUF(e.target.value)}
+                                error={uf === ''}
                             />
                         </Grid>
                         <Grid item xs={12} sm={12} container justifyContent="flex-end">
